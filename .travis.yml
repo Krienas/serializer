@@ -1,15 +1,38 @@
 language: php
 
-php:
-  - 5.3
-  - 5.4
+sudo: false
 
-before_script:
-    - curl -s http://getcomposer.org/installer | php
-    - php composer.phar install --dev
+git:
+    depth: 1
 
-script: phpunit --coverage-clover clover
+cache:
+  directories:
+    - $HOME/.composer/cache
+
+env:
+  global:
+  - TARGET=test
+
+matrix:
+    include:
+        - php: 7.2
+          env: PHPUNIT_FLAGS='--coverage-clover clover'
+        - php: 7.2
+          env: COMPOSER_FLAGS='--prefer-lowest --prefer-stable'
+        - php: 7.2
+          env: TARGET=docs
+        - php: 7.2
+          env: TARGET=cs
+
+        - php: 7.3
+        - php: 7.4
+    fast_finish: true
+
+install:
+  - if [ -x .travis/install_${TARGET}.sh ]; then .travis/install_${TARGET}.sh; fi;
+
+script:
+  - if [ -x .travis/script_${TARGET}.sh ]; then .travis/script_${TARGET}.sh; fi;
 
 after_success:
-    - curl -sL https://bit.ly/artifact-uploader | php
-
+  - if [ -x .travis/sucess_${TARGET}.sh ]; then .travis/sucess_${TARGET}.sh; fi;
